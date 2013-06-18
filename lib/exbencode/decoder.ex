@@ -4,7 +4,8 @@ defmodule Exbencode.Decoder do
       [_, length_str] = Regex.run(%r/^([0-9]+):/, str)
       {length, ""} = String.to_integer(length_str)
       length_str_len = byte_size(length_str)
-      <<^length_str::[binary, size(length_str_len)], ":", string::[binary, size(length)], rest::binary>> = str
+      <<^length_str::[binary, size(length_str_len)], ":",
+      string::[binary, size(length)], rest::binary>> = str
       {string, rest}
     end
   end
@@ -19,7 +20,8 @@ defmodule Exbencode.Decoder do
       {acc, rest}
     end
 
-    def decode(<<digit::utf8, rest::binary>>, acc, _) when digit >= ?0 and digit <= ?9 do
+    def decode(<<digit::utf8, rest::binary>>, acc, _)
+    when digit >= ?0 and digit <= ?9 do
       decode(rest, acc*10 + (digit - ?0), :number)
     end
   end
@@ -52,7 +54,8 @@ defmodule Exbencode.Decoder do
     end
   end
 
-  def decode(str = <<first::size(8), _::binary>>) when ?0 <= first and first <= ?9 do
+  def decode(str = <<first::size(8), _::binary>>)
+  when ?0 <= first and first <= ?9 do
     Strings.decode(str)
   end
 
