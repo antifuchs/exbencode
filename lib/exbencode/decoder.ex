@@ -3,7 +3,8 @@ defmodule Exbencode.Decoder do
     def decode(str) do
       [_, length_str] = Regex.run(%r/^([0-9]+):/, str)
       {length, ""} = String.to_integer(length_str)
-      <<length_str, ?:, string::[binary, size(length)], rest::binary>> = str
+      length_str_len = byte_size(length_str)
+      <<^length_str::[binary, size(length_str_len)], ":", string::[binary, size(length)], rest::binary>> = str
       {string, rest}
     end
   end
