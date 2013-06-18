@@ -19,6 +19,16 @@ defmodule ExbencodeDecoderTest do
     assert {-10, ""} = Exbencode.decode("i-10e")
   end
 
+  test "refuses to decode integers with minus signs in the middle" do
+    Enum.each ["i--1e", "i-1-1e", "i1-e"],
+         fn(str) ->
+             assert_raise FunctionClauseError, "no function clause matching in Exbencode.Decoder.Integers.decode/3",
+             fn ->
+                  Exbencode.decode(str)
+             end
+         end
+  end
+
   test "decodes an empty list" do
     assert {[], ""} = Exbencode.decode("le")
   end
