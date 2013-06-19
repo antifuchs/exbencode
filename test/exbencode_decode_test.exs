@@ -38,17 +38,19 @@ defmodule ExbencodeDecoderTest do
   end
 
   test "decodes a dictionary" do
-    assert {[abc: 20, foo: "foo"], ""} =
+    assert {dict, ""} =
       Exbencode.decode("d3:abci20e3:foo3:fooe")
+    assert HashDict.equal?(HashDict.new([abc: 20, foo: "foo"]), dict)
   end
 
   test "decodes a dictionary containing a list as a value" do
-    assert {[abc: [10]], ""} =
+    assert {dict, ""} =
       Exbencode.decode("d3:abcli10eee")
+    assert HashDict.equal?(HashDict.new([abc: [10]]), dict)
   end
 
   test "decodes a dictionay containing a dictionary as a value" do
-    assert {[abc: [foo: 10]], ""} =
-      Exbencode.decode("d3:abcd3:fooi10eee")
+    assert {dict, ""} = Exbencode.decode("d3:abcd3:fooi10eee")
+    assert HashDict.equal?(HashDict.new([abc: HashDict.new([foo: 10])]), dict)
   end
 end
