@@ -39,7 +39,7 @@ defmodule Exbencode.Decoder do
 
   defmodule Dictionaries do
     def decode(<<?e, rest::binary>>, acc, _) do
-      {Enum.reverse(acc), rest}
+      {acc, rest}
     end
 
     def decode(<<rest::binary>>, acc, last_key) do
@@ -68,6 +68,6 @@ defmodule Exbencode.Decoder do
   end
 
   def decode(<<?d, rest::binary>>) do
-    Dictionaries.decode(rest, [], "")
+    Dictionaries.decode(rest, HashDict.new(), "")
   end
 end
