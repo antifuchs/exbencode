@@ -1,5 +1,6 @@
 defmodule Exbencode.Encoder do
   defp type_to_encode(value) when is_integer(value), do: :integer
+  defp type_to_encode(value) when is_atom(value), do: :atom
   defp type_to_encode(value) when is_binary(value), do: :string
   defp type_to_encode(value) when is_list(value), do: :list
   defp type_to_encode(value) when is_record(value, HashDict), do: :dictionary
@@ -16,8 +17,10 @@ defmodule Exbencode.Encoder do
     ["i#{i}e"]
   end
 
-  defp encode_as(l, :string) do
-    ["#{byte_size(l)}:", l]
+  defp encode_as(s, :atom), do: encode_as(atom_to_binary(s), :string)
+
+  defp encode_as(s, :string) do
+    ["#{byte_size(s)}:", s]
   end
 
   defp encode_as(l, :list) do
@@ -25,7 +28,7 @@ defmodule Exbencode.Encoder do
   end
 
   defp encode_as(d, :dictionary) do
-    keys_and_values = Enum.map(Enum.sort(Dict.keys(d)), [encode(&1), encode(Dict.get(d, &1))])
+    keys_and_values = Enum.map(Enum.sort(Dict.keys(d)), fn(x) -> [encode(x), encode(Dict.get(d, x))] end)
     ["d", keys_and_values, "e"]
   end
 end
