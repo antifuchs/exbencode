@@ -57,4 +57,26 @@ defmodule ExbencodeDecoderTest do
     assert {dict, ""} = Exbencode.decode("d3:abcd3:fooi10eee")
     assert HashDict.equal?(HashDict.new([abc: HashDict.new([foo: 10])]), dict)
   end
+
+  test "detects an incomplete string" do
+    assert {:incomplete, _} = Exbencode.decode("20:foo")
+  end
+
+  test "detects an incomplete int" do
+    assert {:incomplete, _} = Exbencode.decode("i20000")
+  end
+
+  test "detects an incomplete list" do
+    assert {:incomplete, _} = Exbencode.decode("li20e")
+  end
+
+  test "detects an incomplete dict" do
+    assert {:incomplete, _} = Exbencode.decode("d3:foo")
+    assert {:incomplete, _} = Exbencode.decode("d3:foo3:bar")
+  end
+
+  test "Returns the entire string as remainder on imcomplete data" do
+    str = "d3:bar3:foo3:fooi20e"
+    assert {:incomplete, str} = Exbencode.decode(str)
+  end
 end

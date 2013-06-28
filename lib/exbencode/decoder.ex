@@ -4,6 +4,9 @@ defmodule Exbencode.Decoder do
       [_, length_str] = Regex.run(%r/^([0-9]+):/, str)
       {length, ""} = String.to_integer(length_str)
       length_str_len = byte_size(length_str)
+      if byte_size(str) < length_str_len + 1 + length do
+        throw(:incomplete)
+      end
       <<^length_str::[binary, size(length_str_len)], ":",
       string::[binary, size(length)], rest::binary>> = str
       {string, rest}
@@ -11,6 +14,8 @@ defmodule Exbencode.Decoder do
   end
 
   defmodule Integers do
+    def decode(<<>>, acc, _), do: throw(:incomplete)
+
     def decode(<<?-, rest::binary>>, acc, :start) do
       {number, rest} = decode(rest, acc, :number)
       {number * -1, rest}
@@ -27,24 +32,28 @@ defmodule Exbencode.Decoder do
   end
 
   defmodule Lists do
+    def decode(<<>>, acc), do: throw(:incomplete)
+
     def decode(<<?e, rest::binary>>, acc) do
       {Enum.reverse(acc), rest}
     end
 
     def decode(<<rest::binary>>, acc) do
-      {val, rest} = Exbencode.decode(rest)
+      {val, rest} = Exbencode.Decoder.decode_simple(rest)
       decode(rest, [val | acc])
     end
   end
 
   defmodule Dictionaries do
+    def decode(<<>>, acc, _), do: throw(:incomplete)
+
     def decode(<<?e, rest::binary>>, acc, _) do
       {acc, rest}
     end
 
     def decode(<<rest::binary>>, acc, last_key) do
-      {<<key::binary>>, rest} = Exbencode.decode(rest)
-      {value, rest} = Exbencode.decode(rest)
+      {<<key::binary>>, rest} = Exbencode.Decoder.decode_simple(rest)
+      {value, rest} = Exbencode.Decoder.decode_simple(rest)
 
       # Keys must be sorted in ascending order:
       true = (key > last_key)
@@ -56,20 +65,35 @@ defmodule Exbencode.Decoder do
 
   def decode(iolist = [_|_]), do: decode(iolist_to_binary(iolist))
 
-  def decode(str = <<first::size(8), _::binary>>)
+  def decode(str) do
+    try do
+      decode_simple(str)
+    catch
+      :incomplete ->
+        {:incomplete, str}
+    end
+  end
+
+  def decode_simple(<<>>), do: throw(:incomplete)
+
+  @doc false
+  def decode_simple(str = <<first::size(8), _::binary>>)
   when ?0 <= first and first <= ?9 do
     Strings.decode(str)
   end
 
-  def decode(<<?i, rest::binary>>) do
+  @doc false
+  def decode_simple(<<?i, rest::binary>>) do
     Integers.decode(rest, 0, :start)
   end
 
-  def decode(<<?l, rest::binary>>) do
+  @doc false
+  def decode_simple(<<?l, rest::binary>>) do
     Lists.decode(rest, [])
   end
 
-  def decode(<<?d, rest::binary>>) do
+  @doc false
+  def decode_simple(<<?d, rest::binary>>) do
     Dictionaries.decode(rest, HashDict.new(), "")
   end
 end
