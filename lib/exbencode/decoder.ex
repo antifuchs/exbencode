@@ -54,6 +54,8 @@ defmodule Exbencode.Decoder do
     end
   end
 
+  def decode(iolist = [_|_]), do: decode(iolist_to_binary(iolist))
+
   def decode(str = <<first::size(8), _::binary>>)
   when ?0 <= first and first <= ?9 do
     Strings.decode(str)

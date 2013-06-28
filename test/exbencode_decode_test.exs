@@ -3,6 +3,10 @@ Code.require_file "../test_helper.exs", __FILE__
 defmodule ExbencodeDecoderTest do
   use ExUnit.Case
 
+  test "decodes iolists" do
+    assert {"a", ""} = Exbencode.decode(["1", [":", "a"]])
+  end
+
   test "decodes one-element strings" do
     assert {"a", ""} = Exbencode.decode("1:a")
   end
