@@ -63,7 +63,7 @@ defmodule Exbencode.Decoder do
     end
   end
 
-  def decode(iolist = [_|_]), do: decode(iolist_to_binary(iolist))
+  def decode(iolist) when is_list(iolist), do: decode(iolist_to_binary(iolist))
 
   def decode(str) do
     try do

@@ -77,6 +77,6 @@ defmodule ExbencodeDecoderTest do
 
   test "Returns the entire string as remainder on imcomplete data" do
     str = "d3:bar3:foo3:fooi20e"
-    assert {:incomplete, str} = Exbencode.decode(str)
+    assert {:incomplete, str} == Exbencode.decode(str)
   end
 end
